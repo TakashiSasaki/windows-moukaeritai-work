@@ -1,9 +1,10 @@
 """A Textual application to find and remove desktop.ini files.
 
-This application provides a terminal user interface (TUI) for scanning a specified directory
-(or its parent if a file is dropped) for 'desktop.ini' files, allowing users to select and
-delete them. It supports keyboard navigation, select all/none functionality, and confirmation
-dialogs for safe operation.
+This application provides a terminal user interface (TUI) for scanning a
+specified directory (or its parent if a file is dropped) for 'desktop.ini'
+files, allowing users to select and delete them. It supports keyboard
+navigation, select all/none functionality, and confirmation dialogs for safe
+operation.
 """
 
 from pathlib import Path
@@ -115,11 +116,11 @@ class RemoveDesktopIniApp(App):
         yield Footer()
         yield Vertical(
             Input(
-                placeholder="Enter path or drag-and-drop a folder here",
+                placeholder="Enter path or drag-and-drop folder",
                 id="path_input",
             ),
             Horizontal(
-                Button("Scan for desktop.ini files", variant="primary", id="scan"),
+                Button("Scan desktop.ini", variant="primary", id="scan"),
                 Button("Select All", id="select_all"),
                 Button("Select None", id="select_none"),
             ),

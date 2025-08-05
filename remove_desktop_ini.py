@@ -1,10 +1,8 @@
 from pathlib import Path
 import os
-import base64
-
 from textual.app import App, ComposeResult
-from textual.containers import Vertical, ScrollableContainer
-from textual.widgets import Header, Footer, Input, Button, Checkbox
+from textual.containers import Vertical
+from textual.widgets import Header, Footer, Input, Button, SelectionList
 from textual.screen import ModalScreen
 from textual.containers import Grid
 from textual.binding import Binding
@@ -82,7 +80,7 @@ class RemoveDesktopIniApp(App):
                 id="path_input",
             ),
             Button("Scan for desktop.ini files", variant="primary", id="scan"),
-            ScrollableContainer(id="results"),
+            SelectionList[str](id="results"),
         )
 
     def on_mount(self) -> None:
@@ -106,9 +104,9 @@ class RemoveDesktopIniApp(App):
         """Scans the directory specified in the Input for desktop.ini files."""
         self.scan_counter += 1
         path_str = self.query_one("#path_input").value
-        results_container = self.query_one("#results")
+        selection_list = self.query_one("#results", SelectionList)
 
-        results_container.remove_children()
+        selection_list.clear_options()
 
         if not path_str or not os.path.isdir(path_str):
             self.notify(
@@ -130,21 +128,13 @@ class RemoveDesktopIniApp(App):
                 self.notify("No desktop.ini files found.")
                 return
 
+            options = []
             for file_path in sorted(found_files):
-                safe_id = (
-                    f"scan-{self.scan_counter}-cb-"
-                    + base64.urlsafe_b64encode(file_path.encode("utf-8"))
-                    .decode("ascii")
-                    .rstrip("=")
-                )
-                checkbox = Checkbox(file_path, id=safe_id)
-                checkbox.file_path = file_path  # Store the real path here
-                results_container.mount(checkbox)
+                options.append((file_path, file_path))
 
-            # Focus the first checkbox in the results
-            first_checkbox = results_container.query("Checkbox").first()
-            if first_checkbox:
-                first_checkbox.focus()
+            selection_list.add_options(options)
+            selection_list.focus()
+
         except Exception as e:
             self.notify(
                 f"Error scanning directory: {e}",
@@ -162,11 +152,8 @@ class RemoveDesktopIniApp(App):
 
     def get_selected_files(self) -> list[str]:
         """Get the paths of the selected files."""
-        return [
-            cb.file_path
-            for cb in self.query("Checkbox")
-            if cb.value and hasattr(cb, "file_path")
-        ]
+        selection_list = self.query_one("#results", SelectionList)
+        return selection_list.selected
 
     def action_delete_selected(self) -> None:
         """Action to delete selected files."""
@@ -186,13 +173,6 @@ class RemoveDesktopIniApp(App):
                 for file_path in selected_files:
                     try:
                         os.remove(file_path)
-                        for checkbox in self.query("Checkbox"):
-                            if (
-                                hasattr(checkbox, "file_path")
-                                and checkbox.file_path == file_path
-                            ):
-                                checkbox.remove()
-                                break
                         deleted_count += 1
                     except Exception as e:
                         self.notify(
@@ -201,6 +181,9 @@ class RemoveDesktopIniApp(App):
                             severity="error",
                         )
                         error_count += 1
+
+                # After deletion, refresh the list to remove deleted items
+                self.scan_directory()
 
                 if deleted_count > 0:
                     self.notify(
@@ -212,7 +195,6 @@ class RemoveDesktopIniApp(App):
         self.push_screen(
             ConfirmationScreen(len(selected_files)), delete_confirmed
         )
-
 
 
 if __name__ == "__main__":

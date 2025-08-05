@@ -18,12 +18,6 @@ Screen {
     margin-top: 1;
 }
 
-#results Checkbox {
-    height: auto;
-    margin: 0;
-    padding: 0;
-}
-
 /* Confirmation Dialog */
 ConfirmationScreen {
     align: center middle;

@@ -19,8 +19,9 @@ Screen {
 }
 
 #results Checkbox {
-    margin: 0 1;
-    padding: 0 1;
+    height: auto;
+    margin: 0;
+    padding: 0;
 }
 
 /* Confirmation Dialog */

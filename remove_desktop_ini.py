@@ -140,6 +140,11 @@ class RemoveDesktopIniApp(App):
                 checkbox = Checkbox(file_path, id=safe_id)
                 checkbox.file_path = file_path  # Store the real path here
                 results_container.mount(checkbox)
+
+            # Focus the first checkbox in the results
+            first_checkbox = results_container.query("Checkbox").first()
+            if first_checkbox:
+                first_checkbox.focus()
         except Exception as e:
             self.notify(
                 f"Error scanning directory: {e}",

@@ -1,7 +1,7 @@
 from pathlib import Path
 import os
 from textual.app import App, ComposeResult
-from textual.containers import Vertical
+from textual.containers import Vertical, Horizontal
 from textual.widgets import Header, Footer, Input, Button, SelectionList
 from textual.screen import ModalScreen
 from textual.containers import Grid
@@ -64,6 +64,8 @@ class RemoveDesktopIniApp(App):
             action="delete_selected",
             description="Delete Selected",
         ),
+        Binding(key="ctrl+a", action="select_all", description="Select All"),
+        Binding(key="ctrl+n", action="select_none", description="Select None"),
     ]
 
     def __init__(self):
@@ -79,7 +81,11 @@ class RemoveDesktopIniApp(App):
                 placeholder="Enter path or drag-and-drop a folder here",
                 id="path_input",
             ),
-            Button("Scan for desktop.ini files", variant="primary", id="scan"),
+            Horizontal(
+                Button("Scan for desktop.ini files", variant="primary", id="scan"),
+                Button("Select All", id="select_all"),
+                Button("Select None", id="select_none"),
+            ),
             SelectionList[str](id="results"),
         )
 
@@ -107,6 +113,10 @@ class RemoveDesktopIniApp(App):
         """Event handler called when a button is pressed."""
         if event.button.id == "scan":
             self.scan_directory()
+        elif event.button.id == "select_all":
+            self.action_select_all()
+        elif event.button.id == "select_none":
+            self.action_select_none()
 
     def scan_directory(self):
         """Scans the directory specified in the Input for desktop.ini files."""
@@ -157,6 +167,16 @@ class RemoveDesktopIniApp(App):
     async def _quit_callback(self, confirmed: bool):
         if confirmed:
             self.exit()
+
+    def action_select_all(self) -> None:
+        """Selects all items in the list."""
+        selection_list = self.query_one("#results", SelectionList)
+        selection_list.select_all()
+
+    def action_select_none(self) -> None:
+        """Deselects all items in the list."""
+        selection_list = self.query_one("#results", SelectionList)
+        selection_list.deselect_all()
 
     def get_selected_files(self) -> list[str]:
         """Get the paths of the selected files."""

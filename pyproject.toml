@@ -11,6 +11,9 @@ requires-python = ">=3.11"
 dependencies = [
     "textual",
 ]
+authors = [{name = "Takashi Sasaki", email = "takashi316@gmail.com"}]
+license = {file = "LICENSE"}
+urls = {Homepage = "https://x.com/TakashiSasaki"}
 
 [project.scripts]
 remove-desktop-ini = "remove_desktop_ini.app:main"

@@ -1,2 +1,2 @@
-*.css text
-*.py text
+*.css text eol=auto
+*.py text ell=auto

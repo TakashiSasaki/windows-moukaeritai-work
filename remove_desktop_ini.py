@@ -61,6 +61,34 @@ class QuitScreen(ModalScreen[bool]):
             self.dismiss(False)
 
 
+class UsageScreen(ModalScreen[None]):
+    """Screen with usage information."""
+
+    def compose(self) -> ComposeResult:
+        yield Grid(
+            Label(
+                """Usage:
+
+- Drag and drop a folder or file onto the input field to scan.
+- Use arrow keys to navigate the file list.
+- Press Space to select/deselect files.
+- Ctrl+A: Select All
+- Ctrl+N: Select None
+- Ctrl+D: Delete Selected
+- Q: Quit
+- ?: Show this usage screen
+""",
+                id="usage_text",
+            ),
+            Button("Close", variant="primary", id="close_usage"),
+            id="usage_dialog",
+        )
+
+    def on_button_pressed(self, event: Button.Pressed) -> None:
+        if event.button.id == "close_usage":
+            self.dismiss()
+
+
 class RemoveDesktopIniApp(App):
     """A Textual app to find and remove desktop.ini files."""
 
@@ -74,6 +102,7 @@ class RemoveDesktopIniApp(App):
         ),
         Binding(key="ctrl+a", action="select_all", description="Select All"),
         Binding(key="ctrl+n", action="select_none", description="Select None"),
+        Binding(key="?", action="show_usage", description="Show Usage"),
     ]
 
     def __init__(self):
@@ -172,6 +201,10 @@ class RemoveDesktopIniApp(App):
     def action_request_quit(self) -> None:
         """Action to display the quit confirmation screen."""
         self.push_screen(QuitScreen(), self._quit_callback)
+
+    def action_show_usage(self) -> None:
+        """Action to display the usage screen."""
+        self.push_screen(UsageScreen())
 
     async def _quit_callback(self, confirmed: bool):
         if confirmed:

@@ -17,12 +17,7 @@ jobs:
 
       - id: get-version
         run: |
-          VERSION=$(python - <<'PY'
-import tomllib, pathlib
-data = tomllib.loads(pathlib.Path('pyproject.toml').read_text())
-print(data['project']['version'])
-PY
-          )
+          VERSION=$(python -c "import tomllib, pathlib; print(tomllib.loads(pathlib.Path('pyproject.toml').read_text())['project']['version'])")
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
 
       - name: Build pyz

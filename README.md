@@ -72,3 +72,12 @@ python remove_desktop_ini.pyz --help  # or simply "python remove_desktop_ini.pyz
 5.  **Quit:** Press `Q` to quit the application. A confirmation dialog will appear.
 
 6.  **Usage Guide:** Press `?` at any time to display a quick usage guide within the application.
+
+## Author
+
+Takashi Sasaki (<takashi316@gmail.com>)  
+https://x.com/TakashiSasaki
+
+## License
+
+MIT License

@@ -1,5 +1,6 @@
 from pathlib import Path
 import os
+import base64
 
 from textual.app import App, ComposeResult
 from textual.containers import Vertical, ScrollableContainer
@@ -125,7 +126,12 @@ class RemoveDesktopIniApp(App):
                 return
 
             for file_path in sorted(found_files):
-                results_container.mount(Checkbox(file_path, id=file_path))
+                safe_id = "cb-" + base64.urlsafe_b64encode(
+                    file_path.encode("utf-8")
+                ).decode("ascii").rstrip("=")
+                checkbox = Checkbox(file_path, id=safe_id)
+                checkbox.file_path = file_path  # Store the real path here
+                results_container.mount(checkbox)
         except Exception as e:
             self.notify(
                 f"Error scanning directory: {e}",
@@ -144,9 +150,9 @@ class RemoveDesktopIniApp(App):
     def get_selected_files(self) -> list[str]:
         """Get the paths of the selected files."""
         return [
-            cb.id
+            cb.file_path
             for cb in self.query("Checkbox")
-            if cb.value and cb.id is not None
+            if cb.value and hasattr(cb, "file_path")
         ]
 
     def action_delete_selected(self) -> None:
@@ -168,7 +174,10 @@ class RemoveDesktopIniApp(App):
                     try:
                         os.remove(file_path)
                         for checkbox in self.query("Checkbox"):
-                            if checkbox.id == file_path:
+                            if (
+                                hasattr(checkbox, "file_path")
+                                and checkbox.file_path == file_path
+                            ):
                                 checkbox.remove()
                                 break
                         deleted_count += 1

@@ -91,9 +91,17 @@ class RemoveDesktopIniApp(App):
         """Handle paste events, e.g., from drag-and-drop."""
         input_widget = self.query_one("#path_input")
         pasted_path = event.text.strip().strip('"')
-        if os.path.isdir(pasted_path):
+
+        if os.path.isfile(pasted_path):
+            pasted_path = os.path.dirname(pasted_path)
             input_widget.value = pasted_path
             self.scan_directory()
+        elif os.path.isdir(pasted_path):
+            input_widget.value = pasted_path
+            self.scan_directory()
+        else:
+            self.notify("Invalid path. Please drag-and-drop a folder or file.",
+                        title="Error", severity="error")
 
     def on_button_pressed(self, event: Button.Pressed) -> None:
         """Event handler called when a button is pressed."""

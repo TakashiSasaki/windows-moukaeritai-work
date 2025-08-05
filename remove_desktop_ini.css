@@ -10,7 +10,26 @@ Screen {
 }
 
 #scan {
+    width: 1fr;
+}
+
+#select_all, #select_none {
+    width: 1fr;
+}
+
+Horizontal {
     width: 100%;
+    align-horizontal: center;
+    margin-bottom: 1;
+}
+
+Horizontal Button {
+    width: 1fr;
+    margin-right: 1;
+}
+
+Horizontal Button:last-child {
+    margin-right: 0;
 }
 
 #results {

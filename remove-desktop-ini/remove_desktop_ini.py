@@ -1,3 +1,11 @@
+"""A Textual application to find and remove desktop.ini files.
+
+This application provides a terminal user interface (TUI) for scanning a specified directory
+(or its parent if a file is dropped) for 'desktop.ini' files, allowing users to select and
+delete them. It supports keyboard navigation, select all/none functionality, and confirmation
+dialogs for safe operation.
+"""
+
 from pathlib import Path
 import os
 from textual.app import App, ComposeResult

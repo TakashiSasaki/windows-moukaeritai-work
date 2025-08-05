@@ -14,7 +14,6 @@ Screen {
 }
 
 #results {
-    border: tall $primary;
     height: 1fr;
     margin-top: 1;
 }

@@ -130,6 +130,9 @@ class RemoveDesktopIniApp(App):
     def on_mount(self) -> None:
         """Called when the app is mounted."""
         self.query_one("#path_input").focus()
+        self.app.command_palette.register_command(
+            self, "Show Current Directory", self.action_show_current_directory
+        )
 
     def on_paste(self, event: events.Paste) -> None:
         """Handle paste events, e.g., from drag-and-drop."""

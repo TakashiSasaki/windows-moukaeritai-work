@@ -6,7 +6,8 @@ Screen {
 
 #path_input {
     width: 100%;
-    margin: 1 0;
+    margin: 0;
+    padding: 0 0 0 1;
 }
 
 #scan {
@@ -20,21 +21,28 @@ Screen {
 Horizontal {
     width: 100%;
     align-horizontal: center;
-    margin-bottom: 1;
+    margin-bottom: 0;
+    height: 1;
 }
 
 Horizontal Button {
     width: 1fr;
     margin-right: 1;
+    border: none;
 }
 
 Horizontal Button:last-child {
     margin-right: 0;
 }
 
+#main_content {
+    height: 1fr;
+    layout: vertical;
+}
+
 #results {
     height: 1fr;
-    margin-top: 1;
+    margin-top: 0;
 }
 
 /* Confirmation Dialog */

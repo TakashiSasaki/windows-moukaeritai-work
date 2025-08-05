@@ -87,6 +87,7 @@ class RemoveDesktopIniApp(App):
                 Button("Select None", id="select_none"),
             ),
             SelectionList[str](id="results"),
+            id="main_content",
         )
 
     def on_mount(self) -> None:

@@ -50,6 +50,11 @@ ConfirmationScreen {
     align: center middle;
 }
 
+/* Quit Dialog */
+QuitScreen {
+    align: center middle;
+}
+
 #dialog {
     grid-size: 2;
     grid-gutter: 1 2;

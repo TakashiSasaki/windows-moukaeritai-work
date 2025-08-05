@@ -33,10 +33,10 @@ A Textual TUI (Terminal User Interface) application designed to help Windows use
 
 ## How to Run
 
-Navigate to the application's directory in your terminal and run the Python script:
+Navigate to the application's directory in your terminal and run the application module:
 
 ```bash
-python remove_desktop_ini.py
+python -m remove_desktop_ini.app
 ```
 
 ## How to Use

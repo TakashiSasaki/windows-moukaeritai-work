@@ -9,6 +9,7 @@ operation.
 
 from pathlib import Path
 import os
+from importlib import resources
 from textual.app import App, ComposeResult
 from textual.containers import Vertical, Horizontal, Grid
 from textual.widgets import Header, Footer, Input, Button, SelectionList, Label
@@ -91,7 +92,7 @@ class UsageScreen(ModalScreen[None]):
 class RemoveDesktopIniApp(App):
     """A Textual app to find and remove desktop.ini files."""
 
-    CSS_PATH = Path(__file__).with_name("remove_desktop_ini.css")
+    CSS = resources.read_text(__package__, "remove_desktop_ini.css")
     BINDINGS = [
         Binding(key="q", action="request_quit", description="Quit"),
         Binding(

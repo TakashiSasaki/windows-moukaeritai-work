@@ -39,6 +39,20 @@ Navigate to the application's directory in your terminal and run the application
 python -m remove_desktop_ini.app
 ```
 
+## Build a `pyz` Archive
+
+To bundle the application and its stylesheet into a single executable archive, use Python's built-in `zipapp` module:
+
+```bash
+python -m zipapp src -m remove_desktop_ini.app:main -o remove_desktop_ini.pyz
+```
+
+Run the resulting archive directly with the Python interpreter:
+
+```bash
+python remove_desktop_ini.pyz --help  # or simply "python remove_desktop_ini.pyz"
+```
+
 ## How to Use
 
 1.  **Specify Directory:**

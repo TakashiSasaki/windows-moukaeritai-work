@@ -1,9 +1,11 @@
 import asyncio
+from importlib import resources
 from remove_desktop_ini.app import RemoveDesktopIniApp
 
 
-def test_css_file_exists():
-    assert RemoveDesktopIniApp.CSS_PATH.is_file()
+def test_css_resource_exists():
+    css = resources.read_text("remove_desktop_ini", "remove_desktop_ini.css")
+    assert css.strip()
 
 
 def test_app_can_start_and_load_css():

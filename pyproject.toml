@@ -20,3 +20,9 @@ where = ["src"]
 
 [tool.setuptools.package-data]
 "remove_desktop_ini" = ["remove_desktop_ini.css"]
+
+[tool.zipapp]
+source = "src"
+main = "remove_desktop_ini.app:main"
+target = "remove_desktop_ini.pyz"
+interpreter = "/usr/bin/env python3"

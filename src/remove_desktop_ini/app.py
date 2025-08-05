@@ -9,13 +9,12 @@ operation.
 
 from pathlib import Path
 import os
+from importlib import resources
 from textual.app import App, ComposeResult
-from textual.containers import Vertical, Horizontal
-from textual.widgets import Header, Footer, Input, Button, SelectionList
+from textual.containers import Vertical, Horizontal, Grid
+from textual.widgets import Header, Footer, Input, Button, SelectionList, Label
 from textual.screen import ModalScreen
-from textual.containers import Grid
 from textual.binding import Binding
-from textual.widgets import Label
 from textual import events
 
 
@@ -93,7 +92,7 @@ class UsageScreen(ModalScreen[None]):
 class RemoveDesktopIniApp(App):
     """A Textual app to find and remove desktop.ini files."""
 
-    CSS_PATH = "remove_desktop_ini.css"
+    CSS = resources.read_text(__package__, "remove_desktop_ini.css")
     BINDINGS = [
         Binding(key="q", action="request_quit", description="Quit"),
         Binding(
@@ -268,6 +267,11 @@ class RemoveDesktopIniApp(App):
         )
 
 
-if __name__ == "__main__":
+def main() -> None:
+    """Run the Remove Desktop.ini application."""
     app = RemoveDesktopIniApp()
     app.run()
+
+
+if __name__ == "__main__":
+    main()

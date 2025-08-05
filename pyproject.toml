@@ -1,0 +1,28 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "remove-desktop-ini"
+version = "0.1.0"
+description = "A Textual application to find and remove desktop.ini files."
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "textual",
+]
+
+[project.scripts]
+remove-desktop-ini = "remove_desktop_ini.app:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+"remove_desktop_ini" = ["remove_desktop_ini.css"]
+
+[tool.zipapp]
+source = "src"
+main = "remove_desktop_ini.app:main"
+target = "remove_desktop_ini.pyz"
+interpreter = "/usr/bin/env python3"

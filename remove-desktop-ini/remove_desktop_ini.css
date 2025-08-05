@@ -73,6 +73,10 @@ QuitScreen {
     content-align: center middle;
 }
 
+#dialog Button {
+    width: 1fr;
+}
+
 /* Usage Dialog */
 UsageScreen {
     align: center middle;

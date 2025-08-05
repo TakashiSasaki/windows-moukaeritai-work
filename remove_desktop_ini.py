@@ -68,6 +68,10 @@ class RemoveDesktopIniApp(App):
         ),
     ]
 
+    def __init__(self):
+        super().__init__()
+        self.scan_counter = 0
+
     def compose(self) -> ComposeResult:
         """Create child widgets for the app."""
         yield Header()
@@ -100,6 +104,7 @@ class RemoveDesktopIniApp(App):
 
     def scan_directory(self):
         """Scans the directory specified in the Input for desktop.ini files."""
+        self.scan_counter += 1
         path_str = self.query_one("#path_input").value
         results_container = self.query_one("#results")
 
@@ -126,9 +131,12 @@ class RemoveDesktopIniApp(App):
                 return
 
             for file_path in sorted(found_files):
-                safe_id = "cb-" + base64.urlsafe_b64encode(
-                    file_path.encode("utf-8")
-                ).decode("ascii").rstrip("=")
+                safe_id = (
+                    f"scan-{self.scan_counter}-cb-"
+                    + base64.urlsafe_b64encode(file_path.encode("utf-8"))
+                    .decode("ascii")
+                    .rstrip("=")
+                )
                 checkbox = Checkbox(file_path, id=safe_id)
                 checkbox.file_path = file_path  # Store the real path here
                 results_container.mount(checkbox)
@@ -199,6 +207,7 @@ class RemoveDesktopIniApp(App):
         self.push_screen(
             ConfirmationScreen(len(selected_files)), delete_confirmed
         )
+
 
 
 if __name__ == "__main__":

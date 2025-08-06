@@ -1,0 +1,27 @@
+# Sample configuration for Gemini CLI to add a custom 'catalog' command.
+#
+# This file should typically be placed in a user-specific configuration directory
+# that Gemini CLI reads from (e.g., ~/.config/gemini/conf.d/).
+
+[command.catalog]
+# A brief description of what the command does.
+description = "Creates a file catalog by sending a request to the MCP server."
+
+# The command to execute. We use 'nc' (netcat) as the TCP client.
+executable = "nc"
+
+# Default arguments for the executable. Here, we set the default host and port.
+default_args = ["localhost", "10000"]
+
+# Defines the arguments that the user of 'gemini catalog' will provide.
+[command.catalog.args]
+# The first argument is the source directory to catalog.
+source_dir = { type = "string", required = true, position = 0, help = "The directory to scan." }
+
+# The second argument is the path for the output file.
+output_file = { type = "string", required = true, position = 1, help = "The path for the output TSV file." }
+
+# This section defines how the user arguments are formatted and sent to the executable.
+# We are constructing the "source|output" string and piping it to netcat's stdin.
+[command.catalog.pipe]
+template = "{source_dir}|{output_file}"

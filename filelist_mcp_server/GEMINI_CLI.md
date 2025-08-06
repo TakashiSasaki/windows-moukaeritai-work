@@ -1,55 +1,51 @@
 # Using the MCP Server with Gemini CLI
 
-This guide explains how to interact with the Filelist MCP Server from a command-line interface like Gemini CLI. We assume that your CLI has a tool capable of opening TCP connections, such as `netcat` (`nc`), `ncat`, or a similar utility.
+This guide explains how to integrate the Filelist MCP Server with a tool like Gemini CLI.
 
-## Prerequisites
+## Integration Strategy
 
-1.  **Start the MCP Server:** Ensure the MCP server is running. You can start it using the command from the main `README.md`:
-    ```sh
-    # From the project's root directory
-    poetry run python -m filelist_mcp_server.main --host localhost --port 10000
-    ```
-    You can change the host and port as needed.
+The server implements the Model Context Protocol over `stdio`. A compliant client like Gemini CLI should be configured to launch the `mcp-server` executable as a subprocess. The client then communicates with the server by writing JSON-RPC messages to the server's `stdin` and reading responses from its `stdout`.
 
-2.  **TCP Client Tool:** You need a command-line TCP client. We will use `nc` (`netcat`) in the examples below.
+## Configuration
 
-## Sending a Catalog Request
+The client needs to know how to start the server. After installing the package with `poetry install`, the executable `mcp-server` will be available inside the project's virtual environment.
 
-To request a file catalog, you need to send a formatted string to the server. The format is `TARGET_DIRECTORY|OUTPUT_FILE`.
+A Gemini CLI configuration might look something like this, defining a new "provider" or "backend" that points to the server executable.
 
-You can use the `echo` command to create the request string and pipe it directly to your TCP client.
+### Sample Gemini CLI Backend Configuration
 
-### Example on Linux / macOS
+The `gemini-cli.config.toml` file in this repository provides a sample of how a CLI tool could be configured to use this server. A real integration would involve placing a similar configuration in a path that your Gemini CLI tool recognizes.
+
+```toml
+# In a hypothetical file like ~/.config/gemini/backends.toml
+
+[mcp_backend.filelist]
+# Command to execute to start the server.
+# Gemini CLI should resolve this path, potentially using the active virtualenv.
+executable = "mcp-server"
+
+# The protocol this backend uses.
+protocol = "mcp"
+
+# The transport mechanism.
+transport = "stdio"
+```
+
+## Usage
+
+Once the backend is configured, Gemini CLI would handle the process management and communication. The user could then access the tools provided by the server through the CLI's interface.
+
+For example, to call the `catalog/create` tool, the user might run a command like:
 
 ```sh
-# Request to catalog the '/home/user/documents' directory
-# and save the output to '/tmp/docs.tsv'
-echo "/home/user/documents|/tmp/docs.tsv" | nc localhost 10000
+# Hypothetical Gemini CLI command
+gemini call-tool filelist catalog/create --params '{"target_dir": "/my/docs", "output_file": "/tmp/catalog.tsv"}'
 ```
 
-### Example on Windows (using PowerShell)
-
-If you have a `netcat` equivalent on Windows, the command is similar. Here's an example using PowerShell with a hypothetical `nc.exe`:
-
-```powershell
-# Request to catalog 'C:\Users\Admin\Documents'
-# and save to 'C:\Temp\catalog.tsv'
-echo "C:\Users\Admin\Documents|C:\Temp\catalog.tsv" | nc.exe localhost 10000
-```
-
-## Reading the Response
-
-The server will immediately send a response back to the same TCP connection. The client tool will print this response to your standard output.
-
--   If you see `SUCCESS`, the operation is complete.
--   If you see `ERROR: ...`, the message will describe what went wrong.
-
-```sh
-# Successful execution
-$ echo "/home/user/documents|/tmp/docs.tsv" | nc localhost 10000
-SUCCESS
-
-# Failed execution (if /tmp/docs.tsv already exists)
-$ echo "/home/user/documents|/tmp/docs.tsv" | nc localhost 10000
-ERROR: Output file already exists: /tmp/docs.tsv
-```
+The CLI would then perform the following steps in the background:
+1.  Start the `mcp-server` process.
+2.  Send the `initialize` handshake.
+3.  Send the `catalog/create` request to the server's `stdin`.
+4.  Read the response from the server's `stdout`.
+5.  Print the result to the user.
+6.  Send `shutdown` and `exit` notifications to terminate the server process.

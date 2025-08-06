@@ -1,13 +1,15 @@
 # Filelist MCP Server
 
-A simple TCP server that creates file catalogs. It is designed to be compatible with the Everything File List (EFU) format, producing a tab-separated values (TSV) file.
+A server that implements the Model Context Protocol (MCP) to provide a file cataloging tool.
+
+This server communicates over `stdio` using JSON-RPC 2.0, as per the MCP specification. It exposes a `catalog/create` tool that can be called by any MCP-compliant client.
 
 ## Features
 
-- Listens on a configurable host and port for TCP connections.
-- Accepts requests to catalog a directory.
-- Generates a TSV file containing the list of files, their sizes, and timestamps.
-- Returns an error if the target output file already exists to prevent accidental overwrites.
+-   Implements the `stdio` transport for the Model Context Protocol.
+-   Uses JSON-RPC 2.0 for all communication.
+-   Exposes a `catalog/create` tool to recursively scan a directory and create a file list.
+-   The output is a TSV file compatible with the Everything File List (EFU) format.
 
 ## Installation
 
@@ -23,44 +25,47 @@ This project is managed with [Poetry](https://python-poetry.org/).
     ```bash
     poetry install
     ```
-    This will create a virtual environment and install all necessary packages.
+    This will create a virtual environment and install all packages, including a command-line script for the server.
 
 ## Usage
 
-### Running the Server
+The server is designed to be run as a subprocess by an MCP client (e.g., an AI agent, an IDE extension). The client communicates with the server by writing JSON-RPC messages to the server's `stdin` and reading responses from its `stdout`.
 
-To start the MCP server, run the following command from the project root:
+To run the server manually, you can use the script installed by Poetry:
 
 ```bash
-poetry run python -m filelist_mcp_server.main --host <hostname> --port <port_number>
+poetry run mcp-server
 ```
 
--   `--host`: The host to bind to. Defaults to `localhost`.
--   `--port`: The port to listen on. Defaults to `10000`.
+The server will then wait for JSON-RPC messages on its standard input.
 
-Example:
-```bash
-poetry run python -m filelist_mcp_server.main --port 12345
-```
+### Example Interaction
 
-### Sending a Request
+1.  **Client sends `initialize` request:**
+    ```json
+    {"jsonrpc": "2.0", "method": "initialize", "params": {"capabilities": {}}, "id": 1}
+    ```
 
-You can send a request to the server using a simple TCP client like `netcat` or a Python script. The request must be in the following format:
+2.  **Server responds with its capabilities:**
+    ```json
+    {"jsonrpc": "2.0", "id": 1, "result": {"capabilities": {"tools": [{"name": "catalog/create", "description": "...", "parameters": {...}}]}}}
+    ```
 
-`<path_to_catalog_directory>|<path_to_output_file>`
+3.  **Client calls the `catalog/create` tool:**
+    ```json
+    {"jsonrpc": "2.0", "method": "catalog/create", "params": {"target_dir": "/path/to/docs", "output_file": "/tmp/docs.tsv"}, "id": 2}
+    ```
 
-Example using `netcat`:
-```bash
-echo "C:\Users\YourUser\Documents|C:\Temp\mydocuments.tsv" | nc localhost 12345
-```
-
-The server will respond with `SUCCESS` or an `ERROR` message.
+4.  **Server responds with success:**
+    ```json
+    {"jsonrpc": "2.0", "id": 2, "result": {"status": "success", "message": "Catalog created for /path/to/docs"}}
+    ```
 
 ## Running Tests
 
-To run the full suite of unit and integration tests, use `pytest`:
+To run the suite of unit tests:
 
 ```bash
 poetry run pytest
 ```
-*Note: Due to an environment issue in the development sandbox, the tests were run with a more complex command. The command above is the standard way it should be run in a typical environment.*
+*Note: The integration test for the stdio subprocess (`tests/test_protocol.py`) is currently failing in some environments due to issues with how the subprocess's virtualenv and PYTHONPATH are handled. The core unit tests (`tests/test_catalog.py`) are passing.*

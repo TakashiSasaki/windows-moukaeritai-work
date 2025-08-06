@@ -9,7 +9,11 @@ urls = { Homepage = "https://x.com/TakashiSasaki" }
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
+    "python-jsonrpc-server (>=0.4.0,<0.5.0)"
 ]
+
+[project.scripts]
+mcp-server = "filelist_mcp_server.main:main"
 
 [tool.poetry]
 packages = [{include = "filelist_mcp_server", from = "src"}]

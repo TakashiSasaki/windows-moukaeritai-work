@@ -1,36 +1,41 @@
-import argparse
-from .server import TCPServer
+import sys
+import json
+from python_jsonrpc_server import jsonrpc
+from . import handlers
 
 def main():
     """
-    The main entry point for the MCP server application.
-    It parses command-line arguments and starts the TCP server.
-    """
-    parser = argparse.ArgumentParser(description="A TCP server to create file catalogs.")
-    parser.add_argument(
-        "--host",
-        type=str,
-        default="localhost",
-        help="The host address to bind the server to. Defaults to 'localhost'."
-    )
-    parser.add_argument(
-        "--port",
-        type=int,
-        default=10000,
-        help="The port number for the server to listen on. Defaults to 10000."
-    )
-    args = parser.parse_args()
+    Main server loop for stdio transport.
 
-    try:
-        # The 'with' statement ensures that the server's shutdown() method is
-        # called automatically, even if errors occur.
-        with TCPServer((args.host, args.port)) as server:
-            # The server will run indefinitely until interrupted (e.g., with Ctrl+C).
-            server.serve_forever()
-    except OSError as e:
-        print(f"Error: Could not start server on {args.host}:{args.port}. {e}")
-    except Exception as e:
-        print(f"An unexpected error occurred: {e}")
+    Reads newline-delimited JSON-RPC messages from stdin,
+    processes them using the registered handlers, and writes the
+    JSON-RPC response to stdout.
+    """
+    # This ensures the handlers module is loaded and the @method decorators run.
+    _ = handlers
+
+    while True:
+        line = sys.stdin.readline()
+        if not line:
+            # stdin has been closed, so we exit.
+            break
+
+        # The python-jsonrpc-server library expects a dictionary, not a raw string.
+        try:
+            request_dict = json.loads(line)
+        except json.JSONDecodeError:
+            # If the input is not valid JSON, return a Parse Error.
+            response = jsonrpc.JsonRpc(error=jsonrpc.ParseError())
+            print(json.dumps(response.to_dict()), flush=True)
+            continue
+
+        # The `handle_request_dict` function processes the request against the
+        # methods dictionary and returns a response object.
+        response = jsonrpc.handle_request_dict(request_dict, handlers.methods)
+
+        # A response is None for notifications (which don't require a response).
+        if response is not None:
+            print(json.dumps(response.to_dict()), flush=True)
 
 if __name__ == "__main__":
     main()

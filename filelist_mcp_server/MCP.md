@@ -1,35 +1,73 @@
-# MCP Server Methods
+# MCP Server Implementation
 
-The MCP server listens for TCP connections and processes a single type of request to generate a file catalog.
+This server implements the Model Context Protocol (MCP) to expose a file cataloging tool.
 
-## `create_catalog`
+## Transport
 
-This is the primary and only method supported by the server. It is invoked by sending a specially formatted string over a TCP socket.
+The server uses the `stdio` transport layer. It expects a client to launch it as a subprocess and communicate by writing newline-delimited JSON-RPC 2.0 messages to its standard input (`stdin`) and reading responses from its standard output (`stdout`).
 
-### Request Format
+## Supported Methods
 
-The request must be a UTF-8 encoded string with the following format:
+The server supports the following standard and custom MCP methods.
 
-`<TARGET_DIRECTORY>|<OUTPUT_FILE_PATH>`
+### `initialize`
 
--   **`TARGET_DIRECTORY`**: The absolute path to the directory you want to catalog.
--   **`|`**: A pipe character acting as a separator.
--   **`OUTPUT_FILE_PATH`**: The absolute path where the resulting TSV catalog file should be saved. This file must not already exist.
+**Description**: Standard MCP handshake. The client sends its capabilities, and the server responds with its own.
 
-### Response Format
+**Response**: The server declares that it provides one tool: `catalog/create`.
 
-The server will send back a simple UTF-8 encoded string to indicate the result:
+```json
+{
+  "capabilities": {
+    "tools": [
+      {
+        "name": "catalog/create",
+        "description": "Creates a catalog of all files in a directory, saving it as a TSV file.",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "target_dir": {
+              "type": "string",
+              "description": "The absolute path of the directory to catalog."
+            },
+            "output_file": {
+              "type": "string",
+              "description": "The absolute path where the output TSV file will be saved."
+            }
+          },
+          "required": ["target_dir", "output_file"]
+        }
+      }
+    ]
+  }
+}
+```
 
--   **`SUCCESS`**: If the catalog was created successfully.
--   **`ERROR: <details>`**: If any error occurred. The `<details>` part will contain a human-readable description of the error (e.g., "Output file already exists", "Target directory not found").
+### `shutdown`
 
-### Example
+**Description**: Standard MCP notification that the client is preparing to shut down. The server should perform any cleanup. It does not send a response.
 
-**Request:**
-`C:\MyData\Photos|C:\Temp\photo_catalog.tsv`
+### `exit`
 
-**Successful Response:**
-`SUCCESS`
+**Description**: Standard MCP notification that the client has shut down and the server process should now terminate.
 
-**Error Response (if `C:\Temp\photo_catalog.tsv` already exists):**
-`ERROR: Output file already exists: C:\Temp\photo_catalog.tsv`
+### `catalog/create` (Custom Tool)
+
+**Description**: This is the custom tool provided by the server. It scans a directory and creates a TSV file catalog.
+
+**Parameters**:
+- `target_dir` (string): The absolute path of the directory to catalog.
+- `output_file` (string): The absolute path where the output file will be saved.
+
+**Successful Response**:
+```json
+{
+  "status": "success",
+  "message": "Catalog created for <target_dir>"
+}
+```
+
+**Error Responses**:
+- `code: 1001`: Output file already exists.
+- `code: 1002`: Target directory not found.
+- `code: -32602` (Invalid Params): A required parameter was missing.

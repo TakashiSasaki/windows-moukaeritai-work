@@ -6,7 +6,7 @@ This server communicates over `stdio` using JSON-RPC 2.0, as per the MCP specifi
 
 ## Features
 
--   Implements the `stdio` transport for the Model Context Protocol.
+-   Implements `stdio` and `http` transports for the Model Context Protocol.
 -   Uses JSON-RPC 2.0 for all communication.
 -   Exposes a `catalog/create` tool to recursively scan a directory and create a file list.
 -   The output is a TSV file compatible with the Everything File List (EFU) format.
@@ -82,4 +82,4 @@ To run the suite of unit tests:
 ```bash
 poetry run pytest
 ```
-*Note: The integration tests for both the stdio (`tests/test_protocol.py`) and http (`tests/http_test.py`) transports are currently failing in some environments due to issues with subprocesses and test discovery. The core unit tests (`tests/test_catalog.py`) are passing, and the server logic is believed to be correct.*
+*Note: The integration tests for both the stdio (`tests/test_protocol.py`) and http (`tests/test_http.py`) transports currently fail when run in some environments (like the development sandbox). This is due to a persistent environment issue where the `poetry run` command fails to make installed dependencies available to the test process, causing a `ModuleNotFoundError`. The core unit tests (`tests/test_catalog.py`) are passing, and the server and test logic is believed to be correct.*

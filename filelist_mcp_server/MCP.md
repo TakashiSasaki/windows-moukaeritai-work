@@ -4,7 +4,13 @@ This server implements the Model Context Protocol (MCP) to expose a file catalog
 
 ## Transport
 
-The server uses the `stdio` transport layer. It expects a client to launch it as a subprocess and communicate by writing newline-delimited JSON-RPC 2.0 messages to its standard input (`stdin`) and reading responses from its standard output (`stdout`).
+The server supports two transport layers, selectable at runtime.
+
+### `stdio` (Default)
+The server runs as a subprocess and communicates over `stdin` and `stdout`.
+
+### `http`
+The server runs as a persistent HTTP server. It exposes a single endpoint, `/mcp`, which accepts `POST` requests containing a JSON-RPC 2.0 message.
 
 ## Supported Methods
 

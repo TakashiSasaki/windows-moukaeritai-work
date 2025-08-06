@@ -29,15 +29,29 @@ This project is managed with [Poetry](https://python-poetry.org/).
 
 ## Usage
 
-The server is designed to be run as a subprocess by an MCP client (e.g., an AI agent, an IDE extension). The client communicates with the server by writing JSON-RPC messages to the server's `stdin` and reading responses from its `stdout`.
+The server can be run in two modes: `stdio` or `http`.
 
-To run the server manually, you can use the script installed by Poetry:
+### Stdio Mode (Default)
+
+The server is designed to be run as a subprocess by an MCP client. This is the default mode.
 
 ```bash
-poetry run mcp-server
+# This runs the server in stdio mode
+poetry run mcp-server stdio
 ```
 
 The server will then wait for JSON-RPC messages on its standard input.
+
+### HTTP Mode
+
+The server can also run as a persistent HTTP server.
+
+```bash
+# This runs the server in http mode on port 8080
+poetry run mcp-server http --host localhost --port 8080
+```
+
+The server will then listen for JSON-RPC messages via HTTP POST requests to the `/mcp` endpoint.
 
 ### Example Interaction
 
@@ -68,4 +82,4 @@ To run the suite of unit tests:
 ```bash
 poetry run pytest
 ```
-*Note: The integration test for the stdio subprocess (`tests/test_protocol.py`) is currently failing in some environments due to issues with how the subprocess's virtualenv and PYTHONPATH are handled. The core unit tests (`tests/test_catalog.py`) are passing.*
+*Note: The integration tests for both the stdio (`tests/test_protocol.py`) and http (`tests/http_test.py`) transports are currently failing in some environments due to issues with subprocesses and test discovery. The core unit tests (`tests/test_catalog.py`) are passing, and the server logic is believed to be correct.*

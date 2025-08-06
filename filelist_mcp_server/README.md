@@ -1,6 +1,6 @@
 # Filelist MCP Server
 
-A server that implements the Model Context Protocol (MCP) to provide a file cataloging tool.
+A server that implements the [Model Context Protocol (MCP)](https://modelcontextprotocol.io/specification/2025-06-18/) to provide a file cataloging tool.
 
 This server communicates over `stdio` using JSON-RPC 2.0, as per the MCP specification. It exposes a `catalog/create` tool that can be called by any MCP-compliant client.
 

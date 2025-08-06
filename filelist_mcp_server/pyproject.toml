@@ -1,0 +1,28 @@
+[project]
+name = "filelist-mcp-server"
+version = "0.1.0"
+description = "A simple TCP server that creates file catalogs."
+authors = [
+    {name = "Takashi Sasaki", email = "takashi316@gmail.com"}
+]
+urls = { Homepage = "https://x.com/TakashiSasaki" }
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+]
+
+[tool.poetry]
+packages = [{include = "filelist_mcp_server", from = "src"}]
+
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.4.1"
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.pytest.ini_options]
+pythonpath = [
+  "src"
+]

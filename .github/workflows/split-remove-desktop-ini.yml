@@ -1,11 +1,11 @@
 ---
-name: Merge remove-desktop-ini subtree
+name: Create remove-desktop-ini subtree branch
 
 'on':
   workflow_dispatch: {}
 
 jobs:
-  merge:
+  split:
     runs-on: ubuntu-latest
     steps:
       - name: Ensure main branch
@@ -23,12 +23,8 @@ jobs:
         run: |
           git config user.name "${{ github.actor }}"
           git config user.email "${{ github.actor }}@users.noreply.github.com"
-      - name: Fetch subtree branch
-        run: git fetch origin remove-desktop-ini
-      - name: Merge subtree
+      - name: Split subtree to branch
         run: |
-          git subtree merge \
-            --prefix=remove-desktop-ini origin/remove-desktop-ini \
-            -m "Merge remove-desktop-ini subtree"
-      - name: Push changes
-        run: git push origin HEAD:main
+          git subtree split --prefix=remove-desktop-ini \
+            --branch remove-desktop-ini
+          git push origin remove-desktop-ini

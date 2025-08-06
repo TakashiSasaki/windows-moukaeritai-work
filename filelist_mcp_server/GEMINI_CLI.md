@@ -1,51 +1,83 @@
-# Using the MCP Server with Gemini CLI
+# Using the MCP Server with Google Gemini CLI
 
-This guide explains how to integrate the Filelist MCP Server with a tool like Gemini CLI.
-
-## Integration Strategy
-
-The server implements the Model Context Protocol over `stdio`. A compliant client like Gemini CLI should be configured to launch the `mcp-server` executable as a subprocess. The client then communicates with the server by writing JSON-RPC messages to the server's `stdin` and reading responses from its `stdout`.
+This guide explains how to configure and use the Filelist MCP Server with the official Google Gemini CLI.
 
 ## Configuration
 
-The client needs to know how to start the server. After installing the package with `poetry install`, the executable `mcp-server` will be available inside the project's virtual environment.
+The Google Gemini CLI discovers MCP servers through a configuration file. This file must be named `settings.json` and placed in either:
+-   `~/.gemini/` (for global settings that apply everywhere)
+-   `.gemini/` inside your current project's root (for project-specific settings)
 
-A Gemini CLI configuration might look something like this, defining a new "provider" or "backend" that points to the server executable.
+You need to add an entry for this server under the `mcpServers` object in the JSON file.
 
-### Sample Gemini CLI Backend Configuration
+### 1. Install the Server
 
-The `gemini-cli.config.toml` file in this repository provides a sample of how a CLI tool could be configured to use this server. A real integration would involve placing a similar configuration in a path that your Gemini CLI tool recognizes.
+First, ensure you have installed the server and its dependencies using Poetry from the project's root directory:
 
-```toml
-# In a hypothetical file like ~/.config/gemini/backends.toml
-
-[mcp_backend.filelist]
-# Command to execute to start the server.
-# Gemini CLI should resolve this path, potentially using the active virtualenv.
-executable = "mcp-server"
-
-# The protocol this backend uses.
-protocol = "mcp"
-
-# The transport mechanism.
-transport = "stdio"
+```bash
+poetry install
 ```
+
+This command installs the necessary packages and creates a script named `mcp-server` inside the project's virtual environment.
+
+### 2. Configure `settings.json`
+
+The key to a successful configuration is telling the Gemini CLI exactly how to run the `mcp-server` script. Since this is a Poetry project, the most reliable way is to use the `poetry run` command.
+
+Below are two scenarios for your `settings.json` configuration.
+
+#### Scenario A: Running Gemini CLI from Anywhere (Recommended)
+
+This approach works regardless of your current directory. You must provide the **absolute path** to the server's project directory.
+
+Create or open your `~/.gemini/settings.json` file and add the following:
+
+```json
+{
+  "mcpServers": {
+    "filelist_server": {
+      "command": "poetry",
+      "args": ["run", "mcp-server"],
+      "cwd": "/path/to/your/cloned/filelist-mcp-server",
+      "trust": true
+    }
+  }
+}
+```
+
+**Action Required:**
+-   You **must** replace `/path/to/your/cloned/filelist-mcp-server` with the actual, full path to where you have cloned this project on your machine. For example: `C:\Users\YourUser\Projects\filelist-mcp-server` or `/home/youruser/dev/filelist-mcp-server`.
+
+#### Scenario B: Running Gemini CLI from the Project Directory
+
+If you always run the `gemini` command from within the `filelist-mcp-server` directory, you can use a simpler relative path for `cwd`.
+
+Create or open a `.gemini/settings.json` file **inside the `filelist-mcp-server` project root** and add:
+
+```json
+{
+  "mcpServers": {
+    "filelist_server": {
+      "command": "poetry",
+      "args": ["run", "mcp-server"],
+      "cwd": ".",
+      "trust": true
+    }
+  }
+}
+```
+
+**Details:**
+-   `"cwd": "."` tells the CLI to run the command from the current directory, which is assumed to be the project root.
 
 ## Usage
 
-Once the backend is configured, Gemini CLI would handle the process management and communication. The user could then access the tools provided by the server through the CLI's interface.
+Once configured, start the Gemini CLI. It will discover the `filelist_server` and its `catalog/create` tool.
 
-For example, to call the `catalog/create` tool, the user might run a command like:
+You can then ask Gemini to use the tool in your prompts.
 
-```sh
-# Hypothetical Gemini CLI command
-gemini call-tool filelist catalog/create --params '{"target_dir": "/my/docs", "output_file": "/tmp/catalog.tsv"}'
-```
+**Example Prompt:**
 
-The CLI would then perform the following steps in the background:
-1.  Start the `mcp-server` process.
-2.  Send the `initialize` handshake.
-3.  Send the `catalog/create` request to the server's `stdin`.
-4.  Read the response from the server's `stdout`.
-5.  Print the result to the user.
-6.  Send `shutdown` and `exit` notifications to terminate the server process.
+> Use the filelist_server to create a catalog of my documents directory at `/Users/me/Documents` and save it to `/tmp/my_docs_catalog.tsv`.
+
+You can also use the `/mcp` command in the Gemini CLI to see the status of your connected servers and their tools.

@@ -1,0 +1,43 @@
+---
+name: Build and Release remove-desktop-ini pyz
+
+'on':
+  workflow_dispatch: {}
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: remove-desktop-ini
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - id: get-version
+        run: |
+          VERSION=$(python -c "import tomllib, pathlib; print(tomllib.loads(pathlib.Path('pyproject.toml').read_text())['project']['version'])")
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+
+      - name: Build pyz
+        run: python -m zipapp src -m remove_desktop_ini.app:main -o remove-desktop-ini.pyz
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: remove-desktop-ini-${{ steps.get-version.outputs.version }}
+          path: remove-desktop-ini/remove-desktop-ini.pyz
+
+      - name: Create GitHub release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: v${{ steps.get-version.outputs.version }}
+          name: remove-desktop-ini v${{ steps.get-version.outputs.version }}
+          files: remove-desktop-ini/remove-desktop-ini.pyz
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -22,19 +22,34 @@ class MCPClient:
     with it over stdio.
     """
     def __init__(self):
-        # Hardcoding the venv python path due to issues with discovering it in the sandbox
-        python_executable = "/home/jules/.cache/pypoetry/virtualenvs/filelist-mcp-server-xltT5EZO-py3.12/bin/python"
+        # The poetry environment in the sandbox is broken. `poetry run` does not
+        # correctly expose site-packages to the subprocess.
+        # As a workaround, we manually construct the PYTHONPATH to include both
+        # the project's src directory and the virtualenv's site-packages,
+        # and then call the python executable directly.
 
-        # Set the PYTHONPATH to include the 'src' directory so the module can be found
+        python_executable = sys.executable
+
+        # Find the site-packages directory from the current environment
+        site_packages = ""
+        for p in sys.path:
+            if 'site-packages' in p:
+                site_packages = p
+                break
+        if not site_packages:
+            raise RuntimeError("Could not find site-packages directory.")
+
+        # Add the project's 'src' directory to the path
         project_root = Path(__file__).parent.parent
         src_path = project_root / "src"
 
+        # Construct the environment for the subprocess
         env = os.environ.copy()
-        env["PYTHONPATH"] = str(src_path) + os.pathsep + env.get("PYTHONPATH", "")
+        env["PYTHONPATH"] = os.pathsep.join([str(src_path), site_packages, env.get("PYTHONPATH", "")])
 
         # Using -u for unbuffered output is a good practice for subprocess communication
         self.process = subprocess.Popen(
-            [python_executable, "-u", "-m", "filelist_mcp_server.main"],
+            [python_executable, "-u", "-m", "filelist_mcp_server.main", "stdio"],
             stdin=subprocess.PIPE,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,

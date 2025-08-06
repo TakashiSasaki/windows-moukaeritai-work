@@ -1,0 +1,44 @@
+name: Build and Release pyz
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - id: get-version
+        run: |
+          VERSION=$(python -c "import tomllib, pathlib; print(tomllib.loads(pathlib.Path('pyproject.toml').read_text())['project']['version'])")
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+
+      - name: Build pyz
+        run: python -m zipapp -o "remove_desktop_ini-${{ steps.get-version.outputs.version }}.pyz"
+
+      - name: Copy latest alias
+        run: cp "remove_desktop_ini-${{ steps.get-version.outputs.version }}.pyz" remove_desktop_ini-latest.pyz
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: remove-desktop-ini-${{ steps.get-version.outputs.version }}
+          path: |
+            remove_desktop_ini-${{ steps.get-version.outputs.version }}.pyz
+            remove_desktop_ini-latest.pyz
+
+      - name: Create GitHub release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            remove_desktop_ini-${{ steps.get-version.outputs.version }}.pyz
+            remove_desktop_ini-latest.pyz
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
